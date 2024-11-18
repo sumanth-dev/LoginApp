@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        /* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Body Styling with Gradient Background */
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(pink, lightblue, lightgreen,black); /* Mixed colors gradient */
+}
+
+/* Form Table Styling */
+table {
+    border-collapse: collapse;
+    width: 300px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Headers */
+#tableid th {
+    padding: 10px;
+    background-color: #3a7bd5;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Table Cells */
+table td {
+    padding: 12px;
+    text-align: left;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+/* Hover Effects */
+table td:hover {
+    background-color: #e1f0ff;
+}
+
+/* Input Fields Styling */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #3a7bd5; /* Change border color */
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #306db8; /* Darker border color on focus */
+    outline: none;
+}
+
+/* Button Styling */
+input[type="button"] {
+    padding: 10px 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #3a7bd5;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 5px;
+}
+
+input[type="button"]:hover {
+    background-color: #306db8;
+}
+
+/* Styling for Table Rows */
+#tableid tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#tableid tr:nth-child(odd) {
+    background-color: #fff;
+}
+
+#tableid td,
+#tableid th {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+/* Centering Content */
+center {
+    margin: 20px 0;
+}
+
+    </style>
+</head>
+<body onload="getAll()">
+    <div class="head">
+    <center>
+        <table class="table1" border="1">
+            <tr>
+                <td>Login Name</td>
+                <td><input type="text" id="loginname"></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><input type="password" id="password"></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="button" onclick="save()" value="Save">
+                    <input type="button" onclick="update()" value="Update">
+
+                </td>
+            </tr>
+        </table>
+    </center>
+    <br><br>
+
+    <center>
+        <table border="1" id="tableid">
+            <tr>
+                <th>Login Name</th>
+                <th>Password</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </table>
+    </center>
+</div>
+</body>
+<script>
+    let currentEditRow = null; // Variable to track the row being edited
+
+// Function to load existing data into the table on page load
+function getAll() {
+    alert("I am get all")
+    let table = document.getElementById("tableid");
+    let savedData = JSON.parse(sessionStorage.getItem("tableData")) || [];
+
+    // Loop through saved data and populate the table
+    savedData.forEach(rowData => {
+        addrowtoTable(rowData.login, rowData.password);
+    });
+}
+
+// Function to save new data to the table and sessionStorage
+function save() {
+    alert("I am save")
+    var loginname = document.getElementById("loginname").value;
+    var password = document.getElementById("password").value;
+
+    // Validate login name and password fields
+    if (loginname == "") {
+        alert("Please enter login name");
+        document.getElementById("loginname").focus();
+        return false;
+    }
+
+    if (password == "") { 
+        alert("Please enter password");
+        document.getElementById("password").focus();
+        return false;
+    }
+
+    // Check if we're editing an existing row or adding a new one
+    if (currentEditRow) {
+        alert("I am update")
+        // Update the current row's data
+        currentEditRow.cells[0].innerHTML = loginname;
+        currentEditRow.cells[1].innerHTML = password;
+
+        // Update the sessionStorage with the new data
+        updateSessionStorage();
+
+        currentEditRow = null; // Reset the editing row
+        alert("Row updated successfully");
+    } else {
+        // Add new data to the table
+        addrowtoTable(loginname, password);
+
+        // Save data in sessionStorage
+        let savedData = JSON.parse(sessionStorage.getItem("tableData")) || [];
+        savedData.push({ login: loginname, password: password });
+        sessionStorage.setItem("tableData", JSON.stringify(savedData));
+
+        alert("Saved successfully");
+    }
+
+    // Clear the input fields after saving or updating
+    document.getElementById("loginname").value = "";
+    document.getElementById("password").value = "";
+}
+
+// Function to dynamically add rows to the table
+function addrowtoTable(login, password) {
+    let table = document.getElementById("tableid");
+    let tr = document.createElement("tr");
+
+    let td1 = document.createElement("td");
+    let td2 = document.createElement("td");
+    td1.innerHTML = login;
+    td2.innerHTML = password;
+
+    let td3 = document.createElement("td");
+    let td4 = document.createElement("td");
+
+    td3.innerHTML = `<input type="button" value="Edit" onclick="editRow(this)">`;
+    td4.innerHTML = `<input type="button" value="Delete" onclick="deleteRow(this)">`;
+
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    tr.appendChild(td4);
+    table.appendChild(tr);
+}
+
+// Function to edit a row from the table
+function editRow(button) {
+    alert("I am edit row")
+    // Get the row to be edited
+    let row = button.parentNode.parentNode;
+    let login = row.cells[0].innerHTML;
+    let password = row.cells[1].innerHTML;
+
+    // Set the form fields with the current row values
+    document.getElementById("loginname").value = login;
+    document.getElementById("password").value = password;
+
+    // Set the row to be edited in the global variable
+    currentEditRow = row;
+
+    // Set focus on the login name input field
+    document.getElementById("loginname").focus();
+}
+
+// Function to delete a row from the table
+function deleteRow(button) {
+    alert("I am delete row")
+    let row = button.parentNode.parentNode; // Get the row to delete
+    let login = row.cells[0].innerHTML; // Get the login name to delete from sessionStorage
+    row.remove(); // Remove the row from the table
+
+    // Remove from sessionStorage
+    let savedData = JSON.parse(sessionStorage.getItem("tableData")) || [];
+    let updatedData = savedData.filter(item => item.login !== login);
+    sessionStorage.setItem("tableData", JSON.stringify(updatedData));
+
+    alert("Row deleted successfully");
+}
+
+
+
+
+
+
+// Function to add a new row to the table
+function addRowTable() {
+    let table = document.getElementById("tableid");
+    let newRow = table.insertRow();
+
+    // Insert editable cells for 'Login' and 'Password'
+    let loginCell = newRow.insertCell(0);
+    let passwordCell = newRow.insertCell(1);
+
+    // Make the cells editable and add an event listener to update dynamically
+    loginCell.contentEditable = "true";
+    passwordCell.contentEditable = "true";
+
+    // Add event listeners to each cell for dynamic updating
+    loginCell.addEventListener("input", updateTableData);
+    passwordCell.addEventListener("input", updateTableData);
+
+    // Set default placeholder text or leave blank
+    loginCell.innerHTML = "Enter login";
+    passwordCell.innerHTML = "Enter password";
+}
+
+// Function to save data from the table to sessionStorage dynamically
+function update() {
+    alert("I am update")
+    var loginname = document.getElementById("loginname").value;
+    var password = document.getElementById("password").value;
+
+    // Check if we're editing an existing row or adding a new one
+    if (currentEditRow) {
+        // Update the current row's data
+        currentEditRow.cells[0].innerHTML = loginname;
+        currentEditRow.cells[1].innerHTML = password;
+    } else {
+        // Add new data to the table
+        addrowtoTable(loginname, password);
+    }
+
+    // Save data in sessionStorage
+    let savedData = JSON.parse(sessionStorage.getItem("tableData")) || [];
+    savedData.push({ login: loginname, password: password });
+    sessionStorage.setItem("tableData", JSON.stringify(savedData));
+
+    // Clear the input fields after saving or updating
+    document.getElementById("loginname").value = "";
+    document.getElementById("password").value = "";
+
+    // Reset the global variable
+    currentEditRow = null;
+}   
+
+// Function to update the table data dynamically
+function updateTableData() {
+    alert("I am update table data")
+    if (currentEditRow) {
+    let login = currentEditRow.cells[0].innerHTML;
+    let password = currentEditRow.cells[1].innerHTML;
+    if (login && password) {
+        currentEditRow.cells[0].innerHTML = login;
+        currentEditRow.cells[1].innerHTML = password;
+    } else {
+        currentEditRow.cells[0].innerHTML = "Enter login";
+        currentEditRow.cells[1].innerHTML = "Enter password";           
+
+    }
+    }
+}   
+
+    
+    
+     
+
+    
+
+
+
+</script>
+</html>
